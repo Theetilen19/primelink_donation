@@ -22,8 +22,8 @@ const PRESET_AMOUNTS_USD = [10, 25, 50, 100, 250];
 const PRESET_AMOUNTS_KES = [500, 1000, 2500, 5000, 10000];
 
 export default function DonatePage() {
-    const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'mpesa' | 'paystack'>('stripe');
-    const [currency, setCurrency] = useState<'usd' | 'kes'>('usd');
+    const [paymentMethod, setPaymentMethod] = useState<'mpesa' | 'paystack'>('mpesa');
+    const [currency, setCurrency] = useState<'usd' | 'kes'>('kes');
     const [selectedAmount, setSelectedAmount] = useState<number | null>(50);
     const [customAmount, setCustomAmount] = useState('');
     const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -89,9 +89,9 @@ export default function DonatePage() {
             const params = new URLSearchParams(window.location.search);
             const p = params.get('payment');
             const amt = params.get('amount');
-            if (p === 'mpesa' || p === 'paystack' || p === 'stripe') {
+            if (p === 'mpesa' || p === 'paystack') {
                 setPaymentMethod(p as any);
-                setCurrency(p === 'stripe' ? 'usd' : 'kes');
+                setCurrency(p === 'paystack' ? 'kes' : 'kes');
             }
             if (amt) {
                 // populate custom amount or preset
@@ -111,38 +111,7 @@ export default function DonatePage() {
         setSelectedAmount(null);
     };
 
-    const handleStripeSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!displayAmount || displayAmount < 1) return setError('Please enter a valid amount');
-        if (!form.donorName || !form.donorEmail) return setError('Name and email are required');
-
-        setLoading(true);
-        setError('');
-
-        try {
-            const res = await fetch('/api/stripe/create-session', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    amount: displayAmount,
-                    currency,
-                    donorName: form.donorName,
-                    donorEmail: form.donorEmail,
-                    donorPhone: form.donorPhone || undefined,
-                    campaignId: form.campaignId || undefined,
-                    anonymous: form.anonymous,
-                }),
-            });
-
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Payment session creation failed');
-            window.location.href = data.url;
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Something went wrong');
-        } finally {
-            setLoading(false);
-        }
-    };
+    // Stripe removed: only Paystack and M-Pesa remain
 
     const handleMpesaSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -217,7 +186,7 @@ export default function DonatePage() {
         }
     };
 
-    const handleSubmit = paymentMethod === 'stripe' ? handleStripeSubmit : paymentMethod === 'paystack' ? handlePaystackSubmit : handleMpesaSubmit;
+    const handleSubmit = paymentMethod === 'paystack' ? handlePaystackSubmit : handleMpesaSubmit;
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -248,17 +217,8 @@ export default function DonatePage() {
                                     <div className="flex gap-3 overflow-x-auto">
                                         <button
                                             type="button"
-                                            onClick={() => { setPaymentMethod('stripe'); setCurrency('usd'); }}
-                                            className={`min-w-[100px] flex-shrink-0 py-3 px-4 rounded-2xl border-2 text-sm font-semibold ${paymentMethod === 'stripe' ? 'bg-blue-600/10 border-blue-500 text-white' : 'bg-white/5 border-white/5 text-slate-400'}`}>
-                                            <div className="flex items-center gap-2">
-                                                <CreditCard size={16} />
-                                                Card
-                                            </div>
-                                        </button>
-                                        <button
-                                            type="button"
                                             onClick={() => { setPaymentMethod('paystack'); setCurrency('kes'); }}
-                                            className={`min-w-[100px] flex-shrink-0 py-3 px-4 rounded-2xl border-2 text-sm font-semibold ${paymentMethod === 'paystack' ? 'bg-blue-600/10 border-blue-500 text-white' : 'bg-white/5 border-white/5 text-slate-400'}`}>
+                                            className={`min-w-[120px] flex-shrink-0 py-3 px-4 rounded-2xl border-2 text-sm font-semibold ${paymentMethod === 'paystack' ? 'bg-blue-600/10 border-blue-500 text-white' : 'bg-white/5 border-white/5 text-slate-400'}`}>
                                             <div className="flex items-center gap-2">
                                                 <CreditCard size={16} />
                                                 Paystack
@@ -267,7 +227,7 @@ export default function DonatePage() {
                                         <button
                                             type="button"
                                             onClick={() => { setPaymentMethod('mpesa'); setCurrency('kes'); }}
-                                            className={`min-w-[100px] flex-shrink-0 py-3 px-4 rounded-2xl border-2 text-sm font-semibold ${paymentMethod === 'mpesa' ? 'bg-blue-600/10 border-blue-500 text-white' : 'bg-white/5 border-white/5 text-slate-400'}`}>
+                                            className={`min-w-[120px] flex-shrink-0 py-3 px-4 rounded-2xl border-2 text-sm font-semibold ${paymentMethod === 'mpesa' ? 'bg-blue-600/10 border-blue-500 text-white' : 'bg-white/5 border-white/5 text-slate-400'}`}>
                                             <div className="flex items-center gap-2">
                                                 <Smartphone size={16} />
                                                 M-Pesa
@@ -284,29 +244,22 @@ export default function DonatePage() {
                                             <h3 className="text-white font-bold mb-6 flex items-center gap-2 tracking-tight">
                                                 01. Select Payment Method
                                             </h3>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                                <MethodCard
-                                                    active={paymentMethod === 'stripe'}
-                                                    onClick={() => { setPaymentMethod('stripe'); setCurrency('usd'); }}
-                                                    icon={CreditCard}
-                                                    title="Credit / Debit Card"
-                                                    subtitle="Securely via Stripe"
-                                                />
-                                                <MethodCard
-                                                    active={paymentMethod === 'paystack'}
-                                                    onClick={() => { setPaymentMethod('paystack'); setCurrency('kes'); }}
-                                                    icon={CreditCard}
-                                                    title="Paystack"
-                                                    subtitle="Cards, Bank, Mobile Money"
-                                                />
-                                                <MethodCard
-                                                    active={paymentMethod === 'mpesa'}
-                                                    onClick={() => { setPaymentMethod('mpesa'); setCurrency('kes'); }}
-                                                    icon={Smartphone}
-                                                    title="M-Pesa Mobile"
-                                                    subtitle="Instant STK Push"
-                                                />
-                                            </div>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4">
+                                                    <MethodCard
+                                                        active={paymentMethod === 'paystack'}
+                                                        onClick={() => { setPaymentMethod('paystack'); setCurrency('kes'); }}
+                                                        icon={CreditCard}
+                                                        title="Paystack"
+                                                        subtitle="Cards, Bank, Mobile Money"
+                                                    />
+                                                    <MethodCard
+                                                        active={paymentMethod === 'mpesa'}
+                                                        onClick={() => { setPaymentMethod('mpesa'); setCurrency('kes'); }}
+                                                        icon={Smartphone}
+                                                        title="M-Pesa Mobile"
+                                                        subtitle="Instant STK Push"
+                                                    />
+                                                </div>
                                         </div>
 
                                         {/* Amount Selection */}
@@ -421,7 +374,7 @@ export default function DonatePage() {
                                             disabled={loading || !!mpesaStatus?.polling}
                                             className="btn-premium w-full py-4 md:py-5 text-lg md:text-xl flex items-center justify-center gap-3 active:scale-95"
                                         >
-                                            {loading ? <Loader2 className="animate-spin" /> : <Heart className={paymentMethod === 'stripe' ? '' : 'fill-white'} />}
+                                            {loading ? <Loader2 className="animate-spin" /> : <Heart className="fill-white" />}
                                             {loading ? 'Processing...' : `Donate ${currency === 'kes' ? 'KSh ' : '$'}${displayAmount.toLocaleString()}`}
                                         </button>
 

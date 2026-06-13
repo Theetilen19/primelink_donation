@@ -57,7 +57,7 @@ export type Donation = {
     donor_phone?: string;
     amount: number;
     currency: string;
-    payment_method: 'stripe' | 'mpesa' | 'paystack';
+            payment_method: 'mpesa' | 'paystack';
     transaction_id: string;
     campaign_id?: string;
     status: 'pending' | 'completed' | 'failed';
@@ -68,7 +68,7 @@ export type Donation = {
 export type PaymentLog = {
     id: string;
     donation_id: string;
-    provider: 'stripe' | 'mpesa' | 'paystack';
+            provider: 'mpesa' | 'paystack';
     request_payload: Record<string, unknown>;
     response_payload: Record<string, unknown>;
     status: string;

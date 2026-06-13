@@ -253,7 +253,7 @@ export default function AdminDashboard() {
                                                         {d.anonymous ? 'Anonymous' : d.donor_name}
                                                     </div>
                                                     <div className="text-[10px] text-slate-500 font-black tracking-tight flex items-center gap-1.5 uppercase">
-                                                        {d.payment_method === 'stripe' ? <CreditCard size={10} className="text-blue-500" /> : <Smartphone size={10} className="text-green-500" />}
+                                                        {d.payment_method === 'paystack' ? <CreditCard size={10} className="text-blue-500" /> : <Smartphone size={10} className="text-green-500" />}
                                                         {d.payment_method}
                                                     </div>
                                                 </div>

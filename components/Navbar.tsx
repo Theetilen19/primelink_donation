@@ -67,8 +67,7 @@ export default function Navbar() {
                         <MobileNavItem href="/contact" label="Contact" Icon={ShieldCheck} onClick={() => setOpen(false)} />
                         <div className="h-px bg-white/5 my-2" />
                         <div className="text-sm text-slate-400 px-1">Quick payments</div>
-                        <div className="grid grid-cols-3 gap-2">
-                            <Link href="/donate?payment=stripe" onClick={() => setOpen(false)} className="py-2 px-2 rounded-lg bg-white/5 text-center text-xs block">Card</Link>
+                        <div className="grid grid-cols-2 gap-2">
                             <Link href="/donate?payment=paystack" onClick={() => setOpen(false)} className="py-2 px-2 rounded-lg bg-white/5 text-center text-xs block">Paystack</Link>
                             <Link href="/donate?payment=mpesa" onClick={() => setOpen(false)} className="py-2 px-2 rounded-lg bg-white/5 text-center text-xs block">M-Pesa</Link>
                         </div>
